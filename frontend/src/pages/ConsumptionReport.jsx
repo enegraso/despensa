@@ -12,8 +12,9 @@ const ConsumptionReport = () => {
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
   const [search, setSearch] = useState('');
+  const [viewMode, setViewMode] = useState('detail');
 
-  const fetchData = async () => {
+  const fetchData = async (grouped = false) => {
     setLoading(true);
     setError('');
     try {
@@ -21,6 +22,7 @@ const ConsumptionReport = () => {
       if (desde) params.set('desde', desde);
       if (hasta) params.set('hasta', hasta);
       if (search) params.set('search', search);
+      if (grouped) params.set('grouped', 'true');
 
       const qs = params.toString();
       const url = `/api/reports/consumption${qs ? '?' + qs : ''}`;
@@ -43,12 +45,21 @@ const ConsumptionReport = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(viewMode === 'grouped');
   }, []);
 
   const handleFilter = (e) => {
     e.preventDefault();
-    fetchData();
+    fetchData(viewMode === 'grouped');
+  };
+
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    fetchData(mode === 'grouped');
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const formatCurrency = (val) =>
@@ -61,14 +72,25 @@ const ConsumptionReport = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link to="/" className="text-gray-400 hover:text-gray-600 transition">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+      <header className="bg-white shadow-sm print-hide">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="text-gray-400 hover:text-gray-600 transition">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </Link>
+            <h1 className="text-xl font-bold text-gray-800">Informe de Consumos (Ventas)</h1>
+          </div>
+          <button
+            onClick={handlePrint}
+            className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-6 rounded-xl transition flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
             </svg>
-          </Link>
-          <h1 className="text-xl font-bold text-gray-800">Informe de Consumos (Ventas)</h1>
+            Imprimir
+          </button>
         </div>
       </header>
 
@@ -112,6 +134,29 @@ const ConsumptionReport = () => {
           </div>
         </form>
 
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => handleViewModeChange('detail')}
+            className={`px-5 py-2 rounded-xl text-sm font-medium transition ${
+              viewMode === 'detail'
+                ? 'bg-green-500 text-white shadow-sm'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+            }`}
+          >
+            Vista Detallada
+          </button>
+          <button
+            onClick={() => handleViewModeChange('grouped')}
+            className={`px-5 py-2 rounded-xl text-sm font-medium transition ${
+              viewMode === 'grouped'
+                ? 'bg-green-500 text-white shadow-sm'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+            }`}
+          >
+            Vista Agrupada
+          </button>
+        </div>
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-6 py-4 mb-6 text-sm">
             {error}
@@ -133,21 +178,43 @@ const ConsumptionReport = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    <th className="text-left px-6 py-3 font-medium text-gray-500">Fecha</th>
-                    <th className="text-left px-6 py-3 font-medium text-gray-500">Artículo</th>
-                    <th className="text-center px-6 py-3 font-medium text-gray-500">Cant.</th>
-                    <th className="text-right px-6 py-3 font-medium text-gray-500">P. Unitario</th>
-                    <th className="text-right px-6 py-3 font-medium text-gray-500">Subtotal</th>
+                    {viewMode === 'detail' ? (
+                      <>
+                        <th className="text-left px-6 py-3 font-medium text-gray-500">Fecha</th>
+                        <th className="text-left px-6 py-3 font-medium text-gray-500">Artículo</th>
+                        <th className="text-center px-6 py-3 font-medium text-gray-500">Cant.</th>
+                        <th className="text-right px-6 py-3 font-medium text-gray-500">P. Unitario</th>
+                        <th className="text-right px-6 py-3 font-medium text-gray-500">Subtotal</th>
+                      </>
+                    ) : (
+                      <>
+                        <th className="text-left px-6 py-3 font-medium text-gray-500">#</th>
+                        <th className="text-left px-6 py-3 font-medium text-gray-500">Artículo</th>
+                        <th className="text-center px-6 py-3 font-medium text-gray-500">Cant. Total</th>
+                        <th className="text-right px-6 py-3 font-medium text-gray-500">Total Recaudado</th>
+                      </>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((item) => (
                     <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50 transition">
-                      <td className="px-6 py-3 text-gray-600">{formatDateTime(item.fecha)}</td>
-                      <td className="px-6 py-3 font-medium text-gray-800">{item.articulo}</td>
-                      <td className="px-6 py-3 text-center text-gray-600">{item.cantidad}</td>
-                      <td className="px-6 py-3 text-right text-gray-600">{formatCurrency(item.precio_venta)}</td>
-                      <td className="px-6 py-3 text-right font-medium text-gray-800">{formatCurrency(item.subtotal)}</td>
+                      {viewMode === 'detail' ? (
+                        <>
+                          <td className="px-6 py-3 text-gray-600">{formatDateTime(item.fecha)}</td>
+                          <td className="px-6 py-3 font-medium text-gray-800">{item.articulo}</td>
+                          <td className="px-6 py-3 text-center text-gray-600">{item.cantidad}</td>
+                          <td className="px-6 py-3 text-right text-gray-600">{formatCurrency(item.precio_venta)}</td>
+                          <td className="px-6 py-3 text-right font-medium text-gray-800">{formatCurrency(item.subtotal)}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-6 py-3 text-gray-400">{item.id}</td>
+                          <td className="px-6 py-3 font-medium text-gray-800">{item.articulo}</td>
+                          <td className="px-6 py-3 text-center font-semibold text-green-600">{item.cantidad}</td>
+                          <td className="px-6 py-3 text-right font-medium text-gray-800">{formatCurrency(item.subtotal)}</td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>

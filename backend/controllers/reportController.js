@@ -4,22 +4,26 @@ const StockMovement = require('../models/StockMovement');
 const Product = require('../models/Product');
 const Brand = require('../models/Brand');
 
+const parseLocalDate = (dateStr) => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
 exports.consumptionReport = async (req, res) => {
   try {
-    const { desde, hasta, search } = req.query;
-    console.log('[REPORT] Consumption params:', { desde, hasta, search });
+    const { desde, hasta, search, grouped } = req.query;
+    console.log('[REPORT] Consumption params:', { desde, hasta, search, grouped });
 
     const where = { tipo: 'salida_consumo' };
 
     if (desde || hasta) {
       where.fecha = {};
       if (desde) {
-        const startDate = new Date(desde);
-        startDate.setHours(0, 0, 0, 0);
+        const startDate = parseLocalDate(desde);
         where.fecha[Op.gte] = startDate;
       }
       if (hasta) {
-        const endDate = new Date(hasta);
+        const endDate = parseLocalDate(hasta);
         endDate.setHours(23, 59, 59, 999);
         where.fecha[Op.lte] = endDate;
       }
@@ -65,6 +69,7 @@ exports.consumptionReport = async (req, res) => {
       totalRecaudado += subtotal;
       return {
         id: m.id,
+        articuloId: m.articulo.id,
         fecha: m.fecha,
         articulo: m.articulo.nombre,
         cantidad: m.cantidad,
@@ -76,7 +81,32 @@ exports.consumptionReport = async (req, res) => {
     totalRecaudado = Math.round(totalRecaudado * 100) / 100;
     console.log('[REPORT] Total recaudado:', totalRecaudado);
 
-    res.json({ items, totalRecaudado });
+    if (grouped === 'true') {
+      const groupedMap = {};
+      items.forEach((item) => {
+        if (!groupedMap[item.articuloId]) {
+          groupedMap[item.articuloId] = {
+            articuloId: item.articuloId,
+            articulo: item.articulo,
+            cantidad: 0,
+            subtotal: 0,
+          };
+        }
+        groupedMap[item.articuloId].cantidad += item.cantidad;
+        groupedMap[item.articuloId].subtotal += item.subtotal;
+      });
+      const groupedItems = Object.values(groupedMap)
+        .sort((a, b) => b.cantidad - a.cantidad)
+        .map((g, idx) => ({
+          id: idx + 1,
+          articulo: g.articulo,
+          cantidad: g.cantidad,
+          subtotal: Math.round(g.subtotal * 100) / 100,
+        }));
+      return res.json({ items: groupedItems, totalRecaudado, grouped: true });
+    }
+
+    res.json({ items, totalRecaudado, grouped: false });
   } catch (error) {
     console.error('[REPORT] Consumption error:', error.message, error.stack);
     res.status(500).json({ error: 'Error al generar informe de consumos', detail: error.message });
@@ -85,20 +115,19 @@ exports.consumptionReport = async (req, res) => {
 
 exports.purchasesReport = async (req, res) => {
   try {
-    const { desde, hasta, search } = req.query;
-    console.log('[REPORT] Purchases params:', { desde, hasta, search });
+    const { desde, hasta, search, grouped } = req.query;
+    console.log('[REPORT] Purchases params:', { desde, hasta, search, grouped });
 
     const where = { tipo: 'entrada' };
 
     if (desde || hasta) {
       where.fecha = {};
       if (desde) {
-        const startDate = new Date(desde);
-        startDate.setHours(0, 0, 0, 0);
+        const startDate = parseLocalDate(desde);
         where.fecha[Op.gte] = startDate;
       }
       if (hasta) {
-        const endDate = new Date(hasta);
+        const endDate = parseLocalDate(hasta);
         endDate.setHours(23, 59, 59, 999);
         where.fecha[Op.lte] = endDate;
       }
@@ -142,6 +171,7 @@ exports.purchasesReport = async (req, res) => {
       totalInvertido += subtotal;
       return {
         id: m.id,
+        articuloId: m.articulo.id,
         fecha: m.fecha,
         articulo: m.articulo.nombre,
         cantidad: m.cantidad,
@@ -153,7 +183,32 @@ exports.purchasesReport = async (req, res) => {
     totalInvertido = Math.round(totalInvertido * 100) / 100;
     console.log('[REPORT] Total invertido:', totalInvertido);
 
-    res.json({ items, totalInvertido });
+    if (grouped === 'true') {
+      const groupedMap = {};
+      items.forEach((item) => {
+        if (!groupedMap[item.articuloId]) {
+          groupedMap[item.articuloId] = {
+            articuloId: item.articuloId,
+            articulo: item.articulo,
+            cantidad: 0,
+            subtotal: 0,
+          };
+        }
+        groupedMap[item.articuloId].cantidad += item.cantidad;
+        groupedMap[item.articuloId].subtotal += item.subtotal;
+      });
+      const groupedItems = Object.values(groupedMap)
+        .sort((a, b) => b.cantidad - a.cantidad)
+        .map((g, idx) => ({
+          id: idx + 1,
+          articulo: g.articulo,
+          cantidad: g.cantidad,
+          subtotal: Math.round(g.subtotal * 100) / 100,
+        }));
+      return res.json({ items: groupedItems, totalInvertido, grouped: true });
+    }
+
+    res.json({ items, totalInvertido, grouped: false });
   } catch (error) {
     console.error('[REPORT] Purchases error:', error.message, error.stack);
     res.status(500).json({ error: 'Error al generar informe de ingresos', detail: error.message });
