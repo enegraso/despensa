@@ -8,6 +8,7 @@ const categoryRoutes = require('./routes/categories');
 const brandRoutes = require('./routes/brands');
 const productRoutes = require('./routes/products');
 const stockMovementRoutes = require('./routes/stockMovements');
+const reportRoutes = require('./routes/reports');
 
 require('./models/User');
 require('./models/Category');
@@ -34,6 +35,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/brands', brandRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stock-movements', stockMovementRoutes);
+app.use('/api/reports', reportRoutes);
 
 const startServer = async () => {
   try {

@@ -4,3 +4,15 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
 }
+
+@media print {
+  .print-hide {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+  .min-h-screen {
+    min-height: auto !important;
+  }
+}

@@ -10,6 +10,10 @@ const Home = () => {
     { name: 'Artículos', description: 'Control de inventario y stock', path: '/products', color: 'bg-green-500', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
     { name: 'Consumo Rápido', description: 'Escanear y descontar stock', path: '/scanner', color: 'bg-amber-500', icon: 'M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z' },
     { name: 'Ingreso Mercadería', description: 'Reponer stock de proveedores', path: '/stock-entry', color: 'bg-indigo-500', icon: 'M12 6v6m0 0v6m0-6h6m-6 0H6' },
+    { name: 'Informe Consumos', description: 'Historial de salidas y recaudación', path: '/reports/consumption', color: 'bg-green-500', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+    { name: 'Informe Ingresos', description: 'Historial de compras a proveedores', path: '/reports/purchases', color: 'bg-blue-500', icon: 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z' },
+    { name: 'Listado Precios', description: 'Consultar e imprimir precios', path: '/reports/prices', color: 'bg-teal-500', icon: 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z' },
+    { name: 'Listado Reposición', description: 'Artículos por debajo del stock mínimo', path: '/reports/replenishment', color: 'bg-orange-500', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
   ];
 
   return (
@@ -32,7 +36,7 @@ const Home = () => {
           <p className="text-gray-500">Seleccioná un módulo para comenzar</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {modules.map((mod) => (
             <Link key={mod.path} to={mod.path}
               className="bg-white rounded-2xl shadow-sm hover:shadow-md transition p-6 group">
