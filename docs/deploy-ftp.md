@@ -1,12 +1,14 @@
 # Deploy — FTP / SSH
 
+> **Credenciales**: están en `.env.deploy` (raíz del repo, gitignored). Nunca commitear.
+
 ## Frontend (FTP)
 
 | Campo | Valor |
 |-------|-------|
 | Server | `ftp.sib-2000.com.ar` |
 | Usuario | `sib2000_iagent` |
-| Password | *(guardada en gestor de contraseñas / Bitvise)* |
+| Password | *(ver `.env.deploy`)* |
 | Ruta FTP | `/home/sib2000_iagent/despensa` |
 | URL pública | `https://sib-2000.com.ar/despensa` |
 
@@ -20,26 +22,29 @@ cd frontend
 npm run build
 
 # 2. Subir archivos del dist/
-# Usar la ruta FTP completa, NO solo /despensa
-BASE="ftp://ftp.sib-2000.com.ar/home/sib2000_iagent/despensa"
-USER="sib2000_iagent"
-PASS="TU_PASSWORD"  # valor de .env.production o gestor de contraseñas
+# Credenciales en .env.deploy (raíz del repo)
+set -a; source .env.deploy; set +a
+BASE="ftp://${FTP_SERVER}${FTP_PATH}"
 
-curl -T dist/index.html --user "$USER:$PASS" "$BASE/index.html"
-curl -T dist/assets/index-*.css --user "$USER:$PASS" "$BASE/assets/"
-curl -T dist/assets/index-*.js --user "$USER:$PASS" "$BASE/assets/"
-curl -T dist/favicon.svg --user "$USER:$PASS" "$BASE/favicon.svg"
-curl -T dist/icons.svg --user "$USER:$PASS" "$BASE/icons.svg"
+curl -T dist/index.html --user "$FTP_USER:$FTP_PASS" "$BASE/index.html"
+curl -T dist/assets/index-*.css --user "$FTP_USER:$FTP_PASS" "$BASE/assets/"
+curl -T dist/assets/index-*.js --user "$FTP_USER:$FTP_PASS" "$BASE/assets/"
+curl -T dist/favicon.svg --user "$FTP_USER:$FTP_PASS" "$BASE/favicon.svg"
+curl -T dist/icons.svg --user "$FTP_USER:$FTP_PASS" "$BASE/icons.svg"
 ```
 
 ### PowerShell (este equipo)
 
 ```powershell
-$cred = "sib2000_iagent:TU_PASSWORD"
-$base = "ftp://ftp.sib-2000.com.ar/home/sib2000_iagent/despensa"
+# Cargar credenciales de .env.deploy
+Get-Content .env.deploy | ForEach-Object {
+  if ($_ -match '^(\w+)=(.+)$') { Set-Item "env:$($Matches[1])" $Matches[2] }
+}
+$base = "ftp://$env:FTP_SERVER$env:FTP_PATH"
+$cred = "$env:FTP_USER`:$env:FTP_PASS"
 curl.exe -T "dist\index.html" --user $cred "$base/index.html"
-curl.exe -T "dist\assets\index-CSS.css" --user $cred "$base/assets/index-CSS.css"
-curl.exe -T "dist\assets\index-JS.js" --user $cred "$base/assets/index-JS.js"
+curl.exe -T "dist\assets\index-HASH.css" --user $cred "$base/assets/index-HASH.css"
+curl.exe -T "dist\assets\index-HASH.js" --user $cred "$base/assets/index-HASH.js"
 ```
 
 ## Backend (SSH)
@@ -49,25 +54,46 @@ curl.exe -T "dist\assets\index-JS.js" --user $cred "$base/assets/index-JS.js"
 | Server | `66.97.34.227` |
 | Puerto | `5469` |
 | Usuario | `root` |
-| Password | *(guardada en gestor de contraseñas / Bitvise)* |
+| Password | *(ver `.env.deploy`)* |
 | Ruta remota | `/root/projects/despensa` |
 
-### Conexión
+### Subir cambios al backend
 
-```bash
-# Puerto SSH no estándar: 5469
-ssh -p 5469 root@66.97.34.227
+```powershell
+# Cargar credenciales
+Get-Content .env.deploy | ForEach-Object {
+  if ($_ -match '^(\w+)=(.+)$') { Set-Item "env:$($Matches[1])" $Matches[2] }
+}
+
+# Subir archivos modificados (ejemplo con pscp/plink de PuTTY)
+& "$env:TEMP\pscp.exe" -batch -P $env:SSH_PORT -pw $env:SSH_PASS `
+  "backend\controllers\productController.js" "$($env:SSH_USER)@$($env:SSH_HOST):$($env:SSH_PATH)/controllers/"
+
+& "$env:TEMP\plink.exe" -batch -P $env:SSH_PORT -pw $env:SSH_PASS `
+  "$($env:SSH_USER)@$($env:SSH_HOST)" "pm2 restart despensa-api --update-env"
 ```
-
-### Perfil Bitvise
-
-El perfil Bitvise en `C:\Users\Federico\Documents\vpsback-donweb.tlp` contiene la conexión guardada. La contraseña está encriptada con formato propio de Bitvise (no DPAPI estándar), no extraíble por script.
 
 ## Verificación post-deploy
 
 ```bash
 # Chequear que el index.html referencie el bundle nuevo
 curl -s https://sib-2000.com.ar/despensa/ | grep "index-.*\.js"
+```
+
+### Verificación y reinicio
+
+```bash
+# Conectar y reiniciar el backend
+ssh -p 5469 root@66.97.34.227
+cd /root/projects/despensa
+pm2 restart despensa-api --update-env
+```
+
+### Verificar que el backend esté vivo
+
+```bash
+# Desde la máquina local
+curl -s https://backend.sib-2000.com.ar/backdespen/api/health
 ```
 
 ## Notas
