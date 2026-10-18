@@ -3,6 +3,7 @@ dist/
 .env
 .env.local
 .env.deploy
+.env.deploy-backend
 *.log
 .DS_Store
 Thumbs.db

@@ -1,6 +1,6 @@
-# Deploy — FTP
+# Deploy — FTP / SSH
 
-## Frontend
+## Frontend (FTP)
 
 | Campo | Valor |
 |-------|-------|
@@ -42,9 +42,26 @@ curl.exe -T "dist\assets\index-CSS.css" --user $cred "$base/assets/index-CSS.css
 curl.exe -T "dist\assets\index-JS.js" --user $cred "$base/assets/index-JS.js"
 ```
 
-## Backend
+## Backend (SSH)
 
-*(pendiente — agregar datos cuando estén disponibles)*
+| Campo | Valor |
+|-------|-------|
+| Server | `66.97.34.227` |
+| Puerto | `5469` |
+| Usuario | `root` |
+| Password | *(ver `.env.deploy-backend` local, no commiteado)* |
+| Ruta remota | `/root/projects/despensa` |
+
+### Conexión
+
+```bash
+# Puerto SSH no estándar: 5469
+ssh -p 5469 root@66.97.34.227
+```
+
+### Perfil Bitvise
+
+El perfil Bitvise en `C:\Users\Federico\Documents\vpsback-donweb.tlp` contiene la conexión guardada. La contraseña está encriptada con formato propio de Bitvise (no DPAPI estándar), no extraíble por script.
 
 ## Verificación post-deploy
 
