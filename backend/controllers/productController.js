@@ -91,16 +91,32 @@ async function lookupOpenFoodFacts(codigo) {
 }
 
 // ─── Fase 2: Supermercados VTEX Argentina (CORREGIDO) ───────────────────────
+async function vtexFetch(baseUrl, codigo) {
+  const url = `${baseUrl}/api/catalog_system/pub/products/search?fq=alternateIds_Ean:${codigo}`;
+  const res = await fetchWithTimeout(
+    url,
+    { headers: { 'User-Agent': USER_AGENT, 'Accept': 'application/json' } }
+  );
+  if (!res.ok) return null;
+  let data;
+  try { data = await res.json(); } catch { return null; }
+  if (Array.isArray(data) && data.length) return data;
+
+  // Fallback: búsqueda full-text
+  const url2 = `${baseUrl}/api/catalog_system/pub/products/search?q=${codigo}`;
+  const res2 = await fetchWithTimeout(
+    url2,
+    { headers: { 'User-Agent': USER_AGENT, 'Accept': 'application/json' } }
+  );
+  if (!res2.ok) return null;
+  try { data = await res2.json(); } catch { return null; }
+  return Array.isArray(data) && data.length ? data : null;
+}
+
 async function lookupVtexStore(nombreTienda, baseUrl, codigo) {
   try {
-    const url = `${baseUrl}/api/catalog_system/pub/products/search?fq=ean:${codigo}`;
-    const res = await fetchWithTimeout(
-      url,
-      { headers: { 'User-Agent': USER_AGENT, 'Accept': 'application/json' } }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data || !data.length) return null;
+    const data = await vtexFetch(baseUrl, codigo);
+    if (!data) return null;
 
     const prod = data[0];
     const item = prod.items?.[0];
@@ -137,8 +153,8 @@ exports.lookupExternal = async (req, res) => {
 
     // Fase 2: Supermercados VTEX Argentina
     const tiendas = [
-      { nombre: 'Carrefour', url: 'https://carrefour.com.ar' },
-      { nombre: 'Supermercados Día', url: 'https://supermercadosdia.com.ar' },
+      { nombre: 'Carrefour', url: 'https://www.carrefour.com.ar' },
+      { nombre: 'Supermercados Día', url: 'https://diaonline.supermercadosdia.com.ar' },
     ];
     let vtex = null;
     for (const tienda of tiendas) {
