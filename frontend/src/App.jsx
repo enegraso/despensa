@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Categories from './pages/Categories';
 import Brands from './pages/Brands';
 import Products from './pages/Products';
+import ProductForm from './pages/ProductForm';
 import Scanner from './pages/Scanner';
 import StockEntry from './pages/StockEntry';
 import ConsumptionReport from './pages/ConsumptionReport';
@@ -29,6 +30,8 @@ function AppRoutes() {
       <Route path="/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
       <Route path="/brands" element={<ProtectedRoute><Brands /></ProtectedRoute>} />
       <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+      <Route path="/products/new" element={<ProtectedRoute><ProductForm /></ProtectedRoute>} />
+      <Route path="/products/:id/edit" element={<ProtectedRoute><ProductForm /></ProtectedRoute>} />
       <Route path="/scanner" element={<ProtectedRoute><Scanner /></ProtectedRoute>} />
       <Route path="/stock-entry" element={<ProtectedRoute><StockEntry /></ProtectedRoute>} />
       <Route path="/reports/consumption" element={<ProtectedRoute><ConsumptionReport /></ProtectedRoute>} />

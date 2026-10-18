@@ -29,7 +29,7 @@ despensa/
 │   │   ├── api.js       # Centralized fetch helper
 │   │   └── App.jsx      # Router
 │   └── vite.config.js
-└── spec-*.md           # Specifications (SDD)
+└── docs/               # Specifications (SDD) y docs
 ```
 
 ## Requisitos

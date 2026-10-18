@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { list, getByBarcode, create, update, remove } = require('../controllers/productController');
+const { list, getByBarcode, create, update, remove, lookupExternal } = require('../controllers/productController');
 const authMiddleware = require('../controllers/authMiddleware');
 
 router.get('/', authMiddleware, list);
+router.get('/escanear/:codigo', authMiddleware, lookupExternal);
 router.get('/barcode/:codigo_barras', authMiddleware, getByBarcode);
 router.post('/', authMiddleware, create);
 router.put('/:id', authMiddleware, update);

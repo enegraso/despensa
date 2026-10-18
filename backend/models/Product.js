@@ -58,6 +58,10 @@ const Product = sequelize.define('Product', {
       key: 'id',
     },
   },
+  imagen_url: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 }, {
   tableName: 'products',
   timestamps: true,
