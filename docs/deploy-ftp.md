@@ -6,7 +6,7 @@
 |-------|-------|
 | Server | `ftp.sib-2000.com.ar` |
 | Usuario | `sib2000_iagent` |
-| Password | *(ver `.env.deploy` local, no commiteado)* |
+| Password | *(guardada en gestor de contraseñas / Bitvise)* |
 | Ruta FTP | `/home/sib2000_iagent/despensa` |
 | URL pública | `https://sib-2000.com.ar/despensa` |
 
@@ -23,7 +23,7 @@ npm run build
 # Usar la ruta FTP completa, NO solo /despensa
 BASE="ftp://ftp.sib-2000.com.ar/home/sib2000_iagent/despensa"
 USER="sib2000_iagent"
-PASS="$(cat .env.deploy)"  # o variable de entorno
+PASS="TU_PASSWORD"  # valor de .env.production o gestor de contraseñas
 
 curl -T dist/index.html --user "$USER:$PASS" "$BASE/index.html"
 curl -T dist/assets/index-*.css --user "$USER:$PASS" "$BASE/assets/"
@@ -49,7 +49,7 @@ curl.exe -T "dist\assets\index-JS.js" --user $cred "$base/assets/index-JS.js"
 | Server | `66.97.34.227` |
 | Puerto | `5469` |
 | Usuario | `root` |
-| Password | *(ver `.env.deploy-backend` local, no commiteado)* |
+| Password | *(guardada en gestor de contraseñas / Bitvise)* |
 | Ruta remota | `/root/projects/despensa` |
 
 ### Conexión
